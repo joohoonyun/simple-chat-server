@@ -1,5 +1,6 @@
 package com.practice.kotlinwebsocket.infrastructure.persistence
 
+import com.practice.kotlinwebsocket.domain.ChatMessage
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.CompoundIndex
 import org.springframework.data.mongodb.core.mapping.Document
@@ -17,3 +18,12 @@ data class ChatMessageDocument(
     val message: String,
     val type: String,
 )
+
+fun ChatMessage.toDocument(): ChatMessageDocument {
+    return ChatMessageDocument(
+        roomId = this.roomId,
+        sender = this.sender,
+        message = this.message,
+        type = this.type.name
+    )
+}
