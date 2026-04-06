@@ -1,4 +1,4 @@
-package com.practice.kotlinwebsocket.controller.dto
+package com.practice.kotlinwebsocket.presentation.dto
 
 import com.practice.kotlinwebsocket.domain.ChatMessage
 import com.practice.kotlinwebsocket.domain.MessageType
@@ -10,11 +10,10 @@ data class ChatMessageRequest(
     val type: MessageType,
 )
 
-fun ChatMessageRequest.toMessage(): ChatMessage {
-    return ChatMessage(
+fun ChatMessageRequest.toMessage(): ChatMessage =
+    ChatMessage(
         roomId = this.roomId,
         sender = this.sender,
         message = this.message,
         type = this.type
     )
-}

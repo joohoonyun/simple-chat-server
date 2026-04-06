@@ -1,8 +1,8 @@
-package com.practice.kotlinwebsocket.controller
+package com.practice.kotlinwebsocket.presentation
 
-import com.practice.kotlinwebsocket.controller.dto.ChatMessageRequest
-import com.practice.kotlinwebsocket.controller.dto.toMessage
-import com.practice.kotlinwebsocket.service.SendChatService
+import com.practice.kotlinwebsocket.presentation.dto.ChatMessageRequest
+import com.practice.kotlinwebsocket.presentation.dto.toMessage
+import com.practice.kotlinwebsocket.application.usecase.SendChatUseCase
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RequestMapping("/chat")
 @RestController
-class ChatController(private val sendChatService: SendChatService) {
+class ChatController(private val sendChatUseCase: SendChatUseCase) {
     @PostMapping("/send")
     fun sendMessage(@RequestBody messageRequest: ChatMessageRequest): ResponseEntity<Void> {
-        sendChatService.sendMessage(messageRequest.toMessage())
+        sendChatUseCase.sendMessage(messageRequest.toMessage())
         return ResponseEntity.ok().build()
     }
 }
