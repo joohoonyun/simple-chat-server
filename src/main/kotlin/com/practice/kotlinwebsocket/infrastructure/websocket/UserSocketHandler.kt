@@ -33,6 +33,7 @@ class UserSocketHandler(
                 if (!sessionRegistry.isInRoom(session.id)) {
                     sessionRegistry.enterRoom(session.id, drawEvent.roomId)
                 }
+                logger.debug { "[DRAW] user=${drawEvent.userId} room=${drawEvent.roomId} type=${drawEvent.type} (${drawEvent.x}, ${drawEvent.y}) color=${drawEvent.color} size=${drawEvent.brushSize}" }
                 broadcastDrawEventUseCase.broadcastDrawEvent(drawEvent)
             }
             else -> {
@@ -40,10 +41,15 @@ class UserSocketHandler(
                 when (chatMessage.type) {
                     MessageType.ENTER -> {
                         sessionRegistry.enterRoom(session.id, chatMessage.roomId)
+                        logger.info { "[CHAT] ENTER user=${chatMessage.sender} room=${chatMessage.roomId}" }
                         sendChatUseCase.sendMessage(chatMessage)
                     }
-                    MessageType.TALK -> sendChatUseCase.sendMessage(chatMessage)
+                    MessageType.TALK -> {
+                        logger.info { "[CHAT] TALK  user=${chatMessage.sender} room=${chatMessage.roomId} message=${chatMessage.message}" }
+                        sendChatUseCase.sendMessage(chatMessage)
+                    }
                     MessageType.LEAVE -> {
+                        logger.info { "[CHAT] LEAVE user=${chatMessage.sender} room=${chatMessage.roomId}" }
                         sendChatUseCase.sendMessage(chatMessage)
                         sessionRegistry.leaveRoom(session.id)
                     }

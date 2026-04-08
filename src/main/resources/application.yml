@@ -2,3 +2,7 @@ spring:
   data:
     mongodb:
       uri: mongodb://root:password@localhost:27017/chat?authSource=admin
+
+logging:
+  level:
+    com.practice.kotlinwebsocket: DEBUG
