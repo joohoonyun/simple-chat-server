@@ -2,12 +2,13 @@ package com.practice.kotlinwebsocket.presentation.dto
 
 import com.practice.kotlinwebsocket.domain.ChatMessage
 import com.practice.kotlinwebsocket.domain.MessageType
+import org.jetbrains.annotations.NotNull
 
 data class ChatMessageRequest(
-    val roomId: String,
-    val sender: String,
+    @NotNull("채팅방 ID를 입력해주세요") val roomId: String,
+    @NotNull("메세지 전송자 입력해주세요") val sender: String,
     val message: String,
-    val type: MessageType,
+    @NotNull("메세지 유형을 입력해주세요") val type: MessageType,
 )
 
 fun ChatMessageRequest.toMessage(): ChatMessage =

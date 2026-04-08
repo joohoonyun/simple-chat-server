@@ -1,8 +1,10 @@
 package com.practice.kotlinwebsocket.infrastructure.websocket
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.practice.kotlinwebsocket.application.usecase.BroadcastDrawEventUseCase
 import com.practice.kotlinwebsocket.application.usecase.SendChatUseCase
 import com.practice.kotlinwebsocket.domain.ChatMessage
+import com.practice.kotlinwebsocket.domain.DrawEvent
 import com.practice.kotlinwebsocket.domain.MessageType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
@@ -14,6 +16,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler
 @Component
 class UserSocketHandler(
     private val sendChatUseCase: SendChatUseCase,
+    private val broadcastDrawEventUseCase: BroadcastDrawEventUseCase,
     private val sessionRegistry: WebSocketSessionRegistry,
     private val objectMapper: ObjectMapper,
 ) : TextWebSocketHandler() {
@@ -21,17 +24,30 @@ class UserSocketHandler(
     private val logger = KotlinLogging.logger {}
 
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
-        val chatMessage = objectMapper.readValue(message.payload, ChatMessage::class.java)
+        val node = objectMapper.readTree(message.payload)
+        val category = node.path("category").asText("CHAT")
 
-        when (chatMessage.type) {
-            MessageType.ENTER -> {
-                sessionRegistry.enterRoom(session.id, chatMessage.roomId)
-                sendChatUseCase.sendMessage(chatMessage)
+        when (category) {
+            "DRAW" -> {
+                val drawEvent = objectMapper.treeToValue(node, DrawEvent::class.java)
+                if (!sessionRegistry.isInRoom(session.id)) {
+                    sessionRegistry.enterRoom(session.id, drawEvent.roomId)
+                }
+                broadcastDrawEventUseCase.broadcastDrawEvent(drawEvent)
             }
-            MessageType.TALK -> sendChatUseCase.sendMessage(chatMessage)
-            MessageType.LEAVE -> {
-                sendChatUseCase.sendMessage(chatMessage)
-                sessionRegistry.leaveRoom(session.id)
+            else -> {
+                val chatMessage = objectMapper.treeToValue(node, ChatMessage::class.java)
+                when (chatMessage.type) {
+                    MessageType.ENTER -> {
+                        sessionRegistry.enterRoom(session.id, chatMessage.roomId)
+                        sendChatUseCase.sendMessage(chatMessage)
+                    }
+                    MessageType.TALK -> sendChatUseCase.sendMessage(chatMessage)
+                    MessageType.LEAVE -> {
+                        sendChatUseCase.sendMessage(chatMessage)
+                        sessionRegistry.leaveRoom(session.id)
+                    }
+                }
             }
         }
     }
